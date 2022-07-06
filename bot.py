@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+# from discord.utils import get
 import random
 # 導入json
 import json
@@ -24,27 +25,17 @@ async def on_ready():
 channel = bot.get_channel(jdata['channel'])
 
 
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return
-    if message.content == 'hi':
-        await message.channel.send('銃殺虫')
-    await message.channel.send(message.content)
+# @bot.event
+# async def on_message(ctx):
+#     if ctx.author == bot.user:
+#         return
+#     if ctx.content[0] == '/':
+#         commandd = ctx.content[1:]
+#         print(commandd)
+#         await globals()[commandd](ctx)
+#     if ctx.content == 'hi':
+#         await ctx.channel.send('銃殺虫')
 
-
-@bot.event
-async def on_message(message):
-    channel = bot.get_channel('992087111144579184')
-    if message.author == bot.user:
-        return
-    if message.content[0] == '/':
-        commandd = message.content[1:]
-        print(commandd)
-        await globals()[commandd](message)
-        # await message.channel.send(message.content)
-    else:
-        await message.channel.send(message.content)
 # ----------------------------------------------------------------------------------------------
 
 
@@ -52,12 +43,25 @@ async def on_message(message):
 async def picture(ctx):
     random_picture = random.choice(jdata['rickroll'])
     pic = discord.File(random_picture)
-    await ctx.send(file=pic)
+    await ctx.channel.send(file=pic)
 
 
 @bot.command()  # command
 async def ping(ctx):
-    await ctx.send(f'{round(bot.latency*1000)}(ms)')
+    await ctx.channel.send(f'{round(bot.latency*1000)}(ms)')
 
+
+# @bot.command(pass_context=True)
+# This must be exactly the name of the appropriate role
+# @commands.has_any_role("會員")
+# if ctx.author.has_roles(993152574289104946):
+#         await ctx.channel.send(f'{ctx.author.mention} you have already had the permission')
+#     else:
+@bot.command()
+async def add(ctx):
+    guild = bot.get_guild(866673958005506059)
+    role = guild.get_role(993152574289104946)
+    await ctx.author.add_roles(role)
+    await ctx.channel.send(f'{ctx.author.mention} get the permission {role.mention}!')
 
 bot.run(jdata['TOKEN'])
