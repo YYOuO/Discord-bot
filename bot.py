@@ -4,7 +4,7 @@ from discord.ext import commands
 import random
 # 導入json
 import json
-
+import os
 # 導入json檔
 with open('setting.json', "r", encoding="utf8") as jfile:
     jdata = json.load(jfile)
@@ -25,43 +25,31 @@ async def on_ready():
 channel = bot.get_channel(jdata['channel'])
 
 
-# @bot.event
-# async def on_message(ctx):
-#     if ctx.author == bot.user:
-#         return
-#     if ctx.content[0] == '/':
-#         commandd = ctx.content[1:]
-#         print(commandd)
-#         await globals()[commandd](ctx)
-#     if ctx.content == 'hi':
-#         await ctx.channel.send('銃殺虫')
-
 # ----------------------------------------------------------------------------------------------
 
 
-@bot.command()  # command
-async def picture(ctx):
-    random_picture = random.choice(jdata['rickroll'])
-    pic = discord.File(random_picture)
-    await ctx.channel.send(file=pic)
-
-
-@bot.command()  # command
-async def ping(ctx):
-    await ctx.channel.send(f'{round(bot.latency*1000)}(ms)')
-
-
-# @bot.command(pass_context=True)
-# This must be exactly the name of the appropriate role
-# @commands.has_any_role("會員")
-# if ctx.author.has_roles(993152574289104946):
-#         await ctx.channel.send(f'{ctx.author.mention} you have already had the permission')
-#     else:
 @bot.command()
-async def add(ctx):
-    guild = bot.get_guild(866673958005506059)
-    role = guild.get_role(993152574289104946)
-    await ctx.author.add_roles(role)
-    await ctx.channel.send(f'{ctx.author.mention} get the permission {role.mention}!')
+async def load(ctx, extension):
+    bot.load_extension(f'commands.{extension}')
+    await ctx.send('load {extension} .')
 
-bot.run(jdata['TOKEN'])
+
+@bot.command()
+async def unload(ctx, extension):
+    bot.unload_extension(f'commands.{extension}')
+    await ctx.send('unload {extension} .')
+
+
+@bot.command()
+async def reload(ctx, extension):
+    bot.reload_extension(f'commands.{extension}')
+    await ctx.send('reload {extension} .')
+
+
+for file in os.listdir('./commands'):
+    if file.endswith('.py'):
+        bot.load_extension(f'commands.{file[:-3]}')
+
+
+if __name__ == "__main__":
+    bot.run(jdata['TOKEN'])
