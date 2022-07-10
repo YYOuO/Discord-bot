@@ -30,24 +30,35 @@ channel = bot.get_channel(jdata['channel'])
 
 @bot.command()
 async def load(ctx, extension):
+    if str(ctx.message.author.id) != '876805556122288138':
+        await ctx.send('You do not have the permission!')
+        return
     bot.load_extension(f'commands.{extension}')
-    await ctx.send('load {extension} .')
+    await ctx.send(f'load {extension} .')
 
 
 @bot.command()
 async def unload(ctx, extension):
+    if str(ctx.message.author.id) != '876805556122288138':
+        await ctx.send('You do not have the permission!')
+        return
     bot.unload_extension(f'commands.{extension}')
-    await ctx.send('unload {extension} .')
+    await ctx.send(f'unload {extension} .')
 
 
 @bot.command()
 async def reload(ctx, extension):
+    if str(ctx.message.author.id) != '876805556122288138':
+        await ctx.send('You do not have the permission!')
+        print(ctx.author.id)
+        return
     bot.reload_extension(f'commands.{extension}')
-    await ctx.send('reload {extension} .')
+    await ctx.send(f'reload {extension} .')
 
 
 for file in os.listdir('./commands'):
     if file.endswith('.py'):
+        print(file[:-3])
         bot.load_extension(f'commands.{file[:-3]}')
 
 

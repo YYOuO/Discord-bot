@@ -3,7 +3,7 @@ from discord.ext import commands
 import random
 import json
 
-
+from commands.task import Task
 bot = commands.Bot(command_prefix="/")
 
 
