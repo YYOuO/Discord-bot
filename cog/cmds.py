@@ -21,12 +21,9 @@ class Main(cog_extension):
         role = guild.get_role(993152574289104946)
         await ctx.author.add_roles(role)
         await ctx.channel.send(f'{ctx.author.mention} get the permission {role.mention}!')
-
+        print(f'{ctx.author} get the role')
         channel = self.bot.get_channel(990988022143123476)
         await channel.connect()
-        time.sleep(10)
-        await ctx.author.remove_roles(role)
-        await ctx.channel.send('超過時效！\n請重新申請書房卡！')
 
     @commands.command()  # command
     async def picture(self, ctx):
@@ -38,12 +35,12 @@ class Main(cog_extension):
     @commands.command()
     async def go(self, ctx):
         self.start = self.start + time.time()
-        await ctx.channel.send("start")
+        await ctx.channel.send("start count")
 
     @commands.command()
     async def stop(self, ctx):
         self.end = time.time()
-        await ctx.channel.send(f'{self.end-self.start}(s)')
+        await ctx.channel.send(f'totaltime:{self.end-self.start}(s)')
 
 
 def setup(bot):
