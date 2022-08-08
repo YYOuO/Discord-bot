@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import sqlite3
 from set import cog_extension
+import discord.utils
 
 
 class Main(cog_extension):
@@ -9,6 +10,10 @@ class Main(cog_extension):
     async def on_message(self, ctx):
         if ctx.content == 'hi':
             await ctx.channel.send('幹嘛')
+        if ctx.content.lower() == "<:pepesad:873572961272090654>":
+            await ctx.channel.send('衝殺虫')
+    # @commands.Cog.listener()
+    # async def emojis(self, ctx):
 
 
 def setup(bot):

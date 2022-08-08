@@ -1,15 +1,19 @@
-import discord
-from discord.ext import commands
 import json
+from discord.ext import commands
+import discord
+from set import cog_extension
+import sqlite3
+import time
+import asyncio
+import random
+import sys
+sys.path.append('..')
 with open('setting.json', "r", encoding="utf8") as jfile:
     jdata = json.load(jfile)
-from set import cog_extension
-import random
-import asyncio
-import time
 
 
 class Main(cog_extension):
+    con = sqlite3.connect('study.db')
 
     @commands.command()  # command
     async def ping(self, ctx):
@@ -41,6 +45,17 @@ class Main(cog_extension):
     async def stop(self, ctx):
         self.end = time.time()
         await ctx.channel.send(f'totaltime:{self.end-self.start}(s)')
+
+    @commands.command()
+    async def list(self, ctx):
+        result = self.con.cursor.execute(
+            'SELETE * FROM study ORDER BY time ASC')
+        await ctx.send(result)
+
+    @commands.command()
+    async def draw(self, ctx, *choose):
+        answer = random.choice(choose)
+        await ctx.send(f'就決定是你了！出來吧{answer}！')
 
 
 def setup(bot):

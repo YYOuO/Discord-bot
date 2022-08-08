@@ -1,10 +1,10 @@
+import os
+import json
+import random
 import discord
 from discord.ext import commands
-# from discord.utils import get
-import random
+
 # 導入json
-import json
-import os
 # 導入json檔
 with open('setting.json', "r", encoding="utf8") as jfile:
     jdata = json.load(jfile)
