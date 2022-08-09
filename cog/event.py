@@ -15,6 +15,10 @@ class Main(cog_extension):
     # @commands.Cog.listener()
     # async def emojis(self, ctx):
 
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        await ctx.send(f"ERROR! {str(error)}")
+
 
 def setup(bot):
     bot.add_cog(Main(bot))

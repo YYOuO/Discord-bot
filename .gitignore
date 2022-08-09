@@ -1,7 +1,7 @@
 #忽略整個資料夾
-cog/__pycahe__
-__pycahe__
+/cog/__pycache__/
+/__pycache__/
 #忽略副檔名為的
 #*.txt
 #忽略此檔案
-#bot.py
+test.py
