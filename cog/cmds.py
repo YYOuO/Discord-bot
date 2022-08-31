@@ -1,12 +1,17 @@
+import imp
 import json
 from discord.ext import commands
 import discord
 from set import cog_extension
 import sqlite3
 import time
+import datetime
+import calendar
 import asyncio
 import random
 import sys
+from bs4 import BeautifulSoup
+import requests
 sys.path.append('..')
 with open('setting.json', "r", encoding="utf8") as jfile:
     jdata = json.load(jfile)
@@ -55,7 +60,11 @@ class Main(cog_extension):
     @commands.command()
     async def draw(self, ctx, *choose):
         answer = random.choice(choose)
-        await ctx.send(f'就決定是你了！出來吧{answer}！')
+        await ctx.send(f'就決定是你了！出來吧 {answer}！')
+
+    @commands.command()
+    async def geturl(self, ctx, url):
+        await ctx.send(f'get {url}!')
 
 
 def setup(bot):

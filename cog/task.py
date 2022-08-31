@@ -1,3 +1,5 @@
+import requests
+from bs4 import BeautifulSoup
 import discord
 import datetime
 import json
@@ -40,7 +42,25 @@ class Task(cog_extension):
 
                     await asyncio.sleep(5)
 
+        async def checknews():
+            await self.bot.wait_until_ready()
+            while not self.bot.is_closed():
+                print('url checked!')
+                response = requests.get(jdata['tnfsh'])
+                soup = BeautifulSoup(response.text, "html.parser")
+                title_list = soup.find_all(
+                    'span', {'class': 'list_word text_le'}, limit=10)
+                date_list = soup.find_all(
+                    'span', {'class': 'w15 hidden-xs'}, limit=10)
+                channel = self.bot.get_channel(992786432030679070)
+                for title in title_list:
+                    url = title.select_one('a').get('href')
+                    await channel.send(title.select_one('a').getText())
+                    await channel.send(f'https://www.tnfsh.tn.edu.tw/latestevent/{url}')
+                    print('finish!')
+                await asyncio.sleep(3600)
         self.bg = self.bot.loop.create_task(interval())
+        self.check = self.bot.loop.create_task(checknews())
 
 
 def setup(bot):
