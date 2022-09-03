@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 __all__     = ['NotifyElement', 'TnfshNotify']
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__  = "tobiichi3227"
 # Developed By tobiichi3227
 
@@ -13,7 +13,6 @@ class NotifyElement:
         self.__claim_date  = ''
         self.__claim_group = ''
         self.__is_puttop   = False
-        pass
 
     def getText(self) -> str:
         return self.__text
@@ -30,27 +29,28 @@ class NotifyElement:
     def getPuttop(self) -> bool:
         return self.__is_puttop
 
-    def setText(self, text: str) -> None:
+    def _setText(self, text: str) -> None:
         self.__text = text
 
-    def setUrl(self, url: str) -> None:
+    def _setUrl(self, url: str) -> None:
         self.__url = url
 
-    def setClaimGroup(self, claim_group: str) -> None:
+    def _setClaimGroup(self, claim_group: str) -> None:
         self.__claim_group = claim_group
 
-    def setClaimDate(self, claim_date: str) -> None:
+    def _setClaimDate(self, claim_date: str) -> None:
         self.__claim_date = claim_date
 
-    def setPuttop(self, puttop: bool) -> None:
+    def _setPuttop(self, puttop: bool) -> None:
         self.__is_puttop = puttop
 
 class TnfshNotify:
-    def __init__(self, url: str) -> None:
+    def __init__(self, url: str, search_limit: int) -> None:
         self.__url = url
         self.__html_data = BeautifulSoup(requests.get(self.__url).text, 'html.parser')
         self.__normal_list = []
         self.__puttop_list = []
+        self.__search_limit = search_limit
         self.__gen_notify_data()
 
     def getNormalList(self):
@@ -59,28 +59,38 @@ class TnfshNotify:
     def getPuttopList(self):
         return self.__puttop_list
 
-    # def setNewUrl(self, url: str) -> None:
-    #     self.__url = url
+    def getUrl(self) -> str:
+        return self.__url
+
+    def setNewUrl(self, url: str) -> None:
+        self.__url = url
+        self.__gen_notify_data()
+
+    def getSearchLimit(self) -> int:
+        return self.__search_limit
+
+    def setSearchLimit(self, search_limit: int) -> None:
+        self.__search_limit = search_limit
 
     def __gen_notify_data(self) -> None:
-        title_list  = self.__html_data.find_all('span', {'class': 'list_word text_le'})
+        title_list  = self.__html_data.find_all('span', {'class': 'list_word text_le'}, limit=self.__search_limit)
 
         for title in title_list:
             if title.select('span', {'class': 'puttop'}).__len__() > 0:
                 element = NotifyElement()
-                element.setUrl(title.select_one('a').get('href'))
-                element.setText(title.select_one('a').getText())
-                element.setClaimGroup(title.find_next_siblings('span', limit=2)[0].getText())
-                element.setClaimDate(title.find_next_siblings('span', limit=2)[1].getText())
-                element.setPuttop(True)
+                element._setUrl(title.select_one('a').get('href'))
+                element._setText(title.select_one('a').getText())
+                element._setClaimGroup(title.find_next_siblings('span', limit=2)[0].getText())
+                element._setClaimDate(title.find_next_siblings('span', limit=2)[1].getText())
+                element._setPuttop(True)
                 self.__puttop_list.append(element)
             else:
                 element = NotifyElement()
-                element.setUrl(title.select_one('a').get('href'))
-                element.setText(title.select_one('a').getText())
-                element.setClaimGroup(title.find_next_siblings('span', limit=2)[0].getText())
-                element.setClaimDate(title.find_next_siblings('span', limit=2)[1].getText())
-                element.setPuttop(False)
+                element._setUrl(title.select_one('a').get('href'))
+                element._setText(title.select_one('a').getText())
+                element._setClaimGroup(title.find_next_siblings('span', limit=2)[0].getText())
+                element._setClaimDate(title.find_next_siblings('span', limit=2)[1].getText())
+                element._setPuttop(False)
                 self.__normal_list.append(element)
 
     def UpdateNotifyData(self) -> None:
