@@ -1,5 +1,6 @@
 import imp
 import json
+from subprocess import check_output
 from discord.ext import commands
 import discord
 from set import cog_extension
@@ -58,8 +59,14 @@ class Main(cog_extension):
         await ctx.send(result)
 
     @commands.command()
-    async def draw(self, ctx, *choose):
-        answer = random.choice(choose)
+    async def draw(self, ctx, quantity, *choose):
+        choose = list(choose)
+        quantity = int(quantity)
+        answer = []
+        for a in range(quantity):
+            tmp = random.choice(choose)
+            choose.remove(tmp)
+            answer.append(tmp)
         await ctx.send(f'就決定是你了！出來吧 {answer}！')
 
     @commands.command()

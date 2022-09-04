@@ -11,7 +11,6 @@ from TnfshNotifyApi import TnfshNotify
 class Task(cog_extension):
     # 初始化
     async def embedit(self, URL, TITLE, DESCRIPTION, GROUP, TOP, CHANNEL):
-        print('embedit is run')
         url = 'https://www.tnfsh.tn.edu.tw/latestevent/'+URL
         embed = discord.Embed(
             title=TITLE, url=url, description=DESCRIPTION, color=0x6ad771)
@@ -20,7 +19,6 @@ class Task(cog_extension):
         embed.set_thumbnail(
             url="https://www.tnfsh.tn.edu.tw/images/logo.png")
         embed.set_footer(text=TOP)
-        print(CHANNEL)
         await CHANNEL.send(embed=embed)
 
     def __init__(self, bot):
