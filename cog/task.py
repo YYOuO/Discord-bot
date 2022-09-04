@@ -10,27 +10,24 @@ from TnfshNotifyApi import TnfshNotify
 
 class Task(cog_extension):
     # 初始化
+    async def embedit(self, URL, TITLE, DESCRIPTION, GROUP, TOP, CHANNEL):
+        print('embedit is run')
+        url = 'https://www.tnfsh.tn.edu.tw/latestevent/'+URL
+        embed = discord.Embed(
+            title=TITLE, url=url, description=DESCRIPTION, color=0x6ad771)
+        embed.set_author(
+            name=GROUP, icon_url="https://upload.wikimedia.org/wikipedia/zh/thumb/e/e4/TNFSH_emblem.svg/1200px-TNFSH_emblem.svg.png")
+        embed.set_thumbnail(
+            url="https://www.tnfsh.tn.edu.tw/images/logo.png")
+        embed.set_footer(text=TOP)
+        print(CHANNEL)
+        await CHANNEL.send(embed=embed)
 
     def __init__(self, bot):
        # 父類別初始化屬性(就是搬過來用)
         super().__init__(bot)
-        # some define
-        self.channel = self.bot.get_channel(992786432030679070)
-
-        async def embedit(URL, TITLE, DESCRIPTION, GROUP, TOP):
-            url = 'https://www.tnfsh.tn.edu.tw/latestevent/'+URL
-            embed = discord.Embed(
-                title=TITLE, url=url, description=DESCRIPTION, color=0x6ad771)
-            embed.set_author(
-                name=GROUP, icon_url="https://upload.wikimedia.org/wikipedia/zh/thumb/e/e4/TNFSH_emblem.svg/1200px-TNFSH_emblem.svg.png")
-            embed.set_thumbnail(
-                url="https://www.tnfsh.tn.edu.tw/images/logo.png")
-            embed.set_footer(text=TOP)
-            embed.set_thumbnail(
-                url="https://www.tnfsh.tn.edu.tw/images/logo.png")
-            await self.channel.send(embed=embed)
-
         # check role
+
         async def interval():
             await self.bot.wait_until_ready()
             guild = self.bot.get_guild(int(jdata['guild']))
@@ -57,16 +54,18 @@ class Task(cog_extension):
 
         async def checknews():
             await self.bot.wait_until_ready()
+            self.channel = self.bot.get_channel(992786432030679070)
             while not self.bot.is_closed():
                 print('checknews start')
                 normal_list = set(tnfsh_notify.getNormalList())
                 top_list = set(tnfsh_notify.getPuttopList())
                 nl = normal_list-self.old_normal
                 tl = top_list-self.old_top
+                await asyncio.sleep(5)
                 for a in tl:
-                    await embedit(a.getUrl(), a.getText(), a.getClaimDate(), a.getClaimGroup(), "置頂！")
+                    await self.embedit(a.getUrl(), a.getText(), a.getClaimDate(), a.getClaimGroup(), "置頂！", self.channel)
                 for a in nl:
-                    await embedit(a.getUrl(), a.getText(), a.getClaimDate(), a.getClaimGroup(), "一般！")
+                    await self.embedit(a.getUrl(), a.getText(), a.getClaimDate(), a.getClaimGroup(), "一般！", self.channel)
                 self.old_normal = normal_list
                 self.old_top = top_list
                 print('Check finish!')
