@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 __all__     = ['NotifyElement', 'TnfshNotify']
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __author__  = "tobiichi3227"
 # Developed By tobiichi3227
 
@@ -45,12 +45,12 @@ class NotifyElement:
         self.__is_puttop = puttop
 
 class TnfshNotify:
-    def __init__(self, url: str, search_limit: int) -> None:
+    def __init__(self, url: str) -> None:
         self.__url = url
         self.__html_data = BeautifulSoup(requests.get(self.__url).text, 'html.parser')
         self.__normal_list = []
         self.__puttop_list = []
-        self.__search_limit = search_limit
+        self.__search_limit = 0
         self.__gen_notify_data()
 
     def getNormalList(self):
@@ -73,7 +73,10 @@ class TnfshNotify:
         self.__search_limit = search_limit
 
     def __gen_notify_data(self) -> None:
-        title_list  = self.__html_data.find_all('span', {'class': 'list_word text_le'}, limit=self.__search_limit)
+        if self.__search_limit == 0:
+            title_list  = self.__html_data.find_all('span', {'class': 'list_word text_le'})
+        else:
+            title_list  = self.__html_data.find_all('span', {'class': 'list_word text_le'}, limit=self.__search_limit)
 
         for title in title_list:
             if title.select('span', {'class': 'puttop'}).__len__() > 0:
@@ -90,7 +93,6 @@ class TnfshNotify:
                 element._setText(title.select_one('a').getText())
                 element._setClaimGroup(title.find_next_siblings('span', limit=2)[0].getText())
                 element._setClaimDate(title.find_next_siblings('span', limit=2)[1].getText())
-                element._setPuttop(False)
                 self.__normal_list.append(element)
 
     def UpdateNotifyData(self) -> None:
