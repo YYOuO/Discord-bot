@@ -11,14 +11,12 @@ import calendar
 import asyncio
 import random
 import sys
-from bs4 import BeautifulSoup
-import requests
 sys.path.append('..')
 with open('setting.json', "r", encoding="utf8") as jfile:
     jdata = json.load(jfile)
 
 
-class Main(cog_extension):
+class Cmds(cog_extension):
     con = sqlite3.connect('study.db')
 
     @commands.command()  # command
@@ -67,12 +65,12 @@ class Main(cog_extension):
             tmp = random.choice(choose)
             choose.remove(tmp)
             answer.append(tmp)
-        await ctx.send(f'就決定是你了！出來吧 {answer}！')
+        await ctx.send(f'就決定是你了！出來吧 {answer:answer}！')
 
     @commands.command()
     async def geturl(self, ctx, url):
         await ctx.send(f'get {url}!')
 
 
-def setup(bot):
-    bot.add_cog(Main(bot))
+async def setup(bot):
+    await bot.add_cog(Cmds(bot))

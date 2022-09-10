@@ -67,11 +67,11 @@ class Task(cog_extension):
                 self.old_normal = normal_list
                 self.old_top = top_list
                 print('Check finish!')
-                await asyncio.sleep(3600)
+                await asyncio.sleep(1800)
 
         self.bg = self.bot.loop.create_task(interval())
         self.check = self.bot.loop.create_task(checknews())
 
 
-def setup(bot):
-    bot.add_cog(Task(bot))
+async def setup(bot):
+    await bot.add_cog(Task(bot))

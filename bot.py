@@ -1,18 +1,35 @@
 import os
 import json
-import random
 import discord
 from discord.ext import commands
-
-# 導入json
 # 導入json檔
 with open('setting.json', "r", encoding="utf8") as jfile:
     jdata = json.load(jfile)
+
+
+class MyBot(commands.Bot):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(command_prefix='.', intents=intents)
+        self.extension = []
+        for file in os.listdir('./cog'):
+            if file.endswith('.py'):
+                self.extension.append(f'cog.{file[:-3]}')
+
+    async def setup_hook(self):
+        for ext in self.extension:
+            print(ext)
+            await self.load_extension(ext)
+
+    # async def close(self):
+    #     await super().close()
+
+
 # 建置bot實體 以bot為代詞
 # command_prefix=""前綴詞
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.Bot(intents=intents, command_prefix='/')
+intents.message_content = True
+bot = MyBot(intents)
 
 
 @bot.event  # event
@@ -29,13 +46,12 @@ channel = bot.get_channel(jdata['channel'])
 
 # ----------------------------------------------------------------------------------------------
 
-
 @bot.command()
 async def load(ctx, extension):
     if str(ctx.message.author.id) != jdata['developer']:
         await ctx.send('You do not have the permission!')
         return
-    bot.load_extension(f'cog.{extension}')
+    await bot.load_extension(f'cog.{extension}')
     await ctx.send(f'load {extension} .')
 
 
@@ -44,7 +60,7 @@ async def unload(ctx, extension):
     if str(ctx.message.author.id) != jdata['developer']:
         await ctx.send('You do not have the permission!')
         return
-    bot.unload_extension(f'cog.{extension}')
+    await bot.unload_extension(f'cog.{extension}')
     await ctx.send(f'unload {extension} .')
 
 
@@ -54,14 +70,15 @@ async def reload(ctx, extension):
         await ctx.send('You do not have the permission!')
         print(ctx.author.id)
         return
-    bot.reload_extension(f'cog.{extension}')
+    await bot.reload_extension(f'cog.{extension}')
     await ctx.send(f'reload {extension} .')
 
 
-for file in os.listdir('./cog'):
-    if file.endswith('.py'):
-        print(file[:-3])
-        bot.load_extension(f'cog.{file[:-3]}')
+async def loadcog(*args):
+    for file in os.listdir('./cog'):
+        if file.endswith('.py'):
+            print(file[:-3])
+            await bot.load_extension(f'cog.{file[:-3]}')
 
 
 if __name__ == "__main__":
