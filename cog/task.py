@@ -6,6 +6,7 @@ from set import cog_extension
 from discord.ext import commands
 import asyncio
 from TnfshNotifyApi import TnfshNotify
+from requests import get
 
 
 class Task(cog_extension):
@@ -24,6 +25,7 @@ class Task(cog_extension):
     def __init__(self, bot):
        # 父類別初始化屬性(就是搬過來用)
         super().__init__(bot)
+        self.channel = self.bot.get_channel(992786432030679070)
         # check role
 
         async def interval():
@@ -59,9 +61,10 @@ class Task(cog_extension):
                 top_list = set(tnfsh_notify.getPuttopList())
                 nl = normal_list-self.old_normal
                 tl = top_list-self.old_top
-                await asyncio.sleep(5)
+                await asyncio.sleep(30)
                 for a in tl:
                     await self.embedit(a.getUrl(), a.getText(), a.getClaimDate(), a.getClaimGroup(), "置頂！", self.channel)
+                await asyncio.sleep(10)
                 for a in nl:
                     await self.embedit(a.getUrl(), a.getText(), a.getClaimDate(), a.getClaimGroup(), "一般！", self.channel)
                 self.old_normal = normal_list
@@ -69,6 +72,21 @@ class Task(cog_extension):
                 print('Check finish!')
                 await asyncio.sleep(1800)
 
+        # TOJ check
+        async def TOJcheck():
+            while not self.bot.is_closed():
+                print('TOJcheck start')
+                TOJ = get('https://toj.tfcis.org/oj/')
+                self.channel = self.bot.get_channel(int(jdata['channel']))
+                user = ['866673984731742239', '876805556122288138']
+                if TOJ.status_code != 200:
+                    for usr in user:
+                        await self.channel.send(self.bot.get_user(int(usr)).mention)
+                    await self.channel.send(f'HTTP status CODE :{TOJ.status_code}')
+                await asyncio.sleep(1800)
+
+        # loop
+        self.TOJ = self.bot.loop.create_task(TOJcheck())
         self.bg = self.bot.loop.create_task(interval())
         self.check = self.bot.loop.create_task(checknews())
 
