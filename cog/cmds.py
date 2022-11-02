@@ -1,14 +1,12 @@
-import imp
 import json
-from subprocess import check_output
+from tkinter.tix import Tree
+from urllib import request
 from discord.ext import commands
 import discord
 from set import cog_extension
 import sqlite3
 import time
-import datetime
-import calendar
-import asyncio
+from requests import get
 import random
 import sys
 sys.path.append('..')
@@ -51,12 +49,6 @@ class Cmds(cog_extension):
         await ctx.channel.send(f'totaltime:{self.end-self.start}(s)')
 
     @commands.command()
-    async def list(self, ctx):
-        result = self.con.cursor.execute(
-            'SELETE * FROM study ORDER BY time ASC')
-        await ctx.send(result)
-
-    @commands.command()
     async def draw(self, ctx, quantity, *choose):
         choose = list(choose)
         quantity = int(quantity)
@@ -65,11 +57,17 @@ class Cmds(cog_extension):
             tmp = random.choice(choose)
             choose.remove(tmp)
             answer.append(tmp)
-        await ctx.send(f'就決定是你了！出來吧 {answer:answer}！')
+        await ctx.send(f'就決定是你了！出來吧 {answer}！')
+
+    @commands.command(pass_context=True)
+    async def poke(self, ctx, member: discord.User, *, message=None):
+        message = message or "lasfsdsflkasjdfdflsaasjdsf"
+        await self.bot.send_message(member, message)
 
     @commands.command()
-    async def geturl(self, ctx, url):
-        await ctx.send(f'get {url}!')
+    async def dmm(self, ctx):
+        dm = await self.bot.create_dm(ctx.author)
+        await dm.send('whatever')
 
 
 async def setup(bot):

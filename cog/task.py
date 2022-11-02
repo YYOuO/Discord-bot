@@ -26,8 +26,8 @@ class Task(cog_extension):
        # 父類別初始化屬性(就是搬過來用)
         super().__init__(bot)
         self.channel = self.bot.get_channel(992786432030679070)
-        # check role
 
+        # check role
         async def interval():
             await self.bot.wait_until_ready()
             guild = self.bot.get_guild(int(jdata['guild']))

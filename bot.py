@@ -7,9 +7,9 @@ with open('setting.json', "r", encoding="utf8") as jfile:
     jdata = json.load(jfile)
 
 
-class MyBot(commands.Bot):
+class dcBot(commands.Bot):
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(command_prefix='.', intents=intents)
+        super().__init__(command_prefix='.', intents=intent)
         self.extension = []
         for file in os.listdir('./cog'):
             if file.endswith('.py'):
@@ -20,16 +20,10 @@ class MyBot(commands.Bot):
             print(ext)
             await self.load_extension(ext)
 
-    # async def close(self):
-    #     await super().close()
-
-
-# 建置bot實體 以bot為代詞
-# command_prefix=""前綴詞
-intents = discord.Intents.default()
-intents.members = True
-intents.message_content = True
-bot = MyBot(intents)
+intent = discord.Intents.default()
+intent.members = True
+intent.message_content = True
+bot = dcBot(intent)
 
 
 @bot.event  # event
@@ -38,8 +32,6 @@ async def on_ready():
     print('BOT is online!!')
     channel = bot.get_channel(992786432030679070)
     await channel.send('Your bot is online!')
-# 啟動bot
-
 
 channel = bot.get_channel(jdata['channel'])
 
@@ -72,13 +64,6 @@ async def reload(ctx, extension):
         return
     await bot.reload_extension(f'cog.{extension}')
     await ctx.send(f'reload {extension} .')
-
-
-async def loadcog(*args):
-    for file in os.listdir('./cog'):
-        if file.endswith('.py'):
-            print(file[:-3])
-            await bot.load_extension(f'cog.{file[:-3]}')
 
 
 if __name__ == "__main__":
