@@ -1,10 +1,7 @@
-import json
-from tkinter.tix import Tree
-from urllib import request
-from discord.ext import commands
 import discord
+import json
+from discord.ext import commands
 from set import cog_extension
-import sqlite3
 import time
 from requests import get
 import random
@@ -15,9 +12,8 @@ with open('setting.json', "r", encoding="utf8") as jfile:
 
 
 class Cmds(cog_extension):
-    con = sqlite3.connect('study.db')
 
-    @commands.command()  # command
+    @commands.command()
     async def ping(self, ctx):
         await ctx.channel.send(f'{round(self.bot.latency*1000)}(ms)')
 
@@ -31,7 +27,7 @@ class Cmds(cog_extension):
         channel = self.bot.get_channel(990988022143123476)
         await channel.connect()
 
-    @commands.command()  # command
+    @commands.command()
     async def picture(self, ctx):
         random_picture = random.choice(jdata['rickroll'])
         pic = discord.File(random_picture)
@@ -65,7 +61,7 @@ class Cmds(cog_extension):
         await self.bot.send_message(member, message)
 
     @commands.command()
-    async def dmm(self, ctx):
+    async def dmme(self, ctx):
         dm = await self.bot.create_dm(ctx.author)
         await dm.send('whatever')
 
