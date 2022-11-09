@@ -15,28 +15,41 @@ class Notes(cog_extension):
             CREATE TABLE IF NOT EXISTS `NOTE` 
             ( USER INT , 
             MESSAGE TEXT , 
-            TIMEE TIMESTAMP  );
+            TIMEE TIMESTAMP,
+            PRIVATE BOOL);
             ''')
         self.con.commit()
 
     @commands.command()
-    async def create(self, ctx, name, time):
+    async def list(self, ctx):
+        notes = self.cur.execute(
+            "SELECT * FROM `NOTE`  ORDER BY `TIMEE` DESC")
+        await ctx.send('Message       Time')
+        await ctx.send('------------------')
+        for a in notes.fetchall():
+            await ctx.send(f'{a[1]}    {a[2]}')
+
+    @commands.command()
+    async def create(self, ctx, name, time, private):
         author = int(ctx.author.id)
         if len(time) != 8:
             await ctx.send('Please follow the style yyyymmdd ex. 20220222')
             return 'Error!'
+        if private != '1' and private != '0':
+            await ctx.send('Private variable must be 0 or 1 !')
+            return 'Error!'
         self.cur.execute(
-            "INSERT INTO `NOTE` (`USER`,`MESSAGE`,`TIMEE`) VALUES(?,?,?)", (author, name, time))
+            "INSERT INTO `NOTE` (`USER`,`MESSAGE`,`TIMEE`,`PRIVATE`) VALUES(?,?,?,?)", (author, name, time, private))
         self.con.commit()
         await ctx.send(f'**{name}** create success!')
 
     @commands.command()
     async def delete(self, ctx, name):
-        operator = int(ctx.author.id)
-
-    @commands.command()
-    async def list(self, ctx):
-        self.cur.execute()
+        author = int(ctx.author.id)
+        delete = self.cur.execute(
+            "SELECT USER FROM NOTE WHERE MESSAGE=(?)", (name))
+        self.con.commit()
+        await ctx.send(type(delete))
 
 
 async def setup(bot):
