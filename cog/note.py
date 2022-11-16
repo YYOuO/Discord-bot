@@ -28,6 +28,7 @@ class Notes(cog_extension):
         await ctx.send('------------------')
         for a in notes.fetchall():
             await ctx.send(f'{a[1]}    {a[2]}')
+        await ctx.send('------------------')
 
     @commands.command()
     async def create(self, ctx, name, time, private):
@@ -36,7 +37,7 @@ class Notes(cog_extension):
             await ctx.send('Please follow the style yyyymmdd ex. 20220222')
             return 'Error!'
         if private != '1' and private != '0':
-            await ctx.send('Private variable must be 0 or 1 !')
+            await ctx.send('Private variable must be 0(false) or 1(true) !')
             return 'Error!'
         self.cur.execute(
             "INSERT INTO `NOTE` (`USER`,`MESSAGE`,`TIMEE`,`PRIVATE`) VALUES(?,?,?,?)", (author, name, time, private))
@@ -46,10 +47,20 @@ class Notes(cog_extension):
     @commands.command()
     async def delete(self, ctx, name):
         author = int(ctx.author.id)
-        delete = self.cur.execute(
-            "SELECT USER FROM NOTE WHERE MESSAGE=(?)", (name))
+        dell = self.cur.execute(
+            "SELECT * FROM NOTE WHERE MESSAGE=(?)", (name,))  # ',' make it a tuple
         self.con.commit()
-        await ctx.send(type(delete))
+        dell = dell.fetchall()
+        if(dell[0][0] == '0'):
+            if dell[0] == author:
+                await ctx.send('you are author!')
+            else:
+                await ctx.send('private message!')
+                return 'Falied!'
+        else:
+            self.cur.execute("DELETE FROM NOTE WHERE MESSAGE=(?)", (name,))
+            self.con.commit()
+        await ctx.send('Delete success!')
 
 
 async def setup(bot):
