@@ -3,6 +3,8 @@ from discord.ext import commands
 import sqlite3
 from set import cog_extension
 import discord.utils
+import datetime
+import asyncio
 
 
 class Notes(cog_extension):
@@ -20,6 +22,16 @@ class Notes(cog_extension):
             ''')
         self.con.commit()
 
+        async def nowtime():
+            await self.bot.wait_until_ready()
+            channel = self.bot.get_channel(992786432030679070)
+            while not self.bot.is_closed():
+                time = datetime.datetime.now().replace(microsecond=0, second=0)
+                print(time)
+                await asyncio.sleep(300)
+
+        self.timesssss = self.bot.loop.create_task(nowtime())
+
     @commands.command()
     async def list(self, ctx):
         notes = self.cur.execute(
@@ -27,7 +39,7 @@ class Notes(cog_extension):
         await ctx.send('Message       Time')
         await ctx.send('------------------')
         for a in notes.fetchall():
-            await ctx.send(f'{a[1]}    {a[2]}')
+            await ctx.send(f'{a[1]}    {a[2]:}')
         await ctx.send('------------------')
 
     @commands.command()
@@ -48,7 +60,7 @@ class Notes(cog_extension):
     async def delete(self, ctx, name):
         author = int(ctx.author.id)
         dell = self.cur.execute(
-            "SELECT * FROM NOTE WHERE MESSAGE=(?)", (name,))  # ',' make it a tuple
+            "SELECT * FROM NOTE WH+ERE MESSAGE=(?)", (name,))  # ',' make it a tuple
         self.con.commit()
         dell = dell.fetchall()
         if(dell[0][0] == '0'):
