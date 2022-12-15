@@ -89,6 +89,26 @@ class Notes(cog_extension):
         else:
             ctx.send('Wait for the last query finish!')
 
+    @commands.command()
+    async def clear(self, ctx):
+        author = int(ctx.author.id)
+        if not self.clear_list:
+            await ctx.send('Nothing delete!')
+        else:
+            if self.sql == False:
+                self.sql = True
+                ll = []
+                for a in self.clear_list:
+                    ll.append((a[1], a[0]))
+                    self.note_list.remove(a)
+                self.cur.executemany(
+                    "DELETE FROM NOTE WHERE MESSAGE=(?) AND USER=(?)", (ll))
+                self.con.commit()
+                self.sql = False
+                await ctx.send('Remove all expired message!')
+            else:
+                await ctx.send('Wait for the last query finish!')
+
 
 async def setup(bot):
     await bot.add_cog(Notes(bot))
