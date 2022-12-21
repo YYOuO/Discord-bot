@@ -44,14 +44,19 @@ class Notes(cog_extension):
 
         self.timesssss = self.bot.loop.create_task(nowtime())
 
-    @commands.command()
+    @commands.group()
+    async def note(self, ctx):
+        pass
+
+    @note.command()
     async def list(self, ctx):
         for a in self.note_list:
+            await ctx.send('|{:^35}|{:^16}|'.format('Message', 'Time'))
             await ctx.send('|{:^35}|{:^16}|'.format(a[1], a[2]))
         print(self.note_list)
 
-    @commands.command()
-    async def add(self, ctx, name, time):
+    @note.command()
+    async def create(self, ctx, name, time):
         author = int(ctx.author.id)
         if len(time) != 12:
             await ctx.send('Please follow the style yyyymmddhhmm ex. 202201190857')
@@ -70,7 +75,7 @@ class Notes(cog_extension):
         else:
             ctx.send('Wait for the last query finish!')
 
-    @commands.command()
+    @note.command()
     async def remove(self, ctx, name):
         if self.sql == False:
             self.sql = True
@@ -86,7 +91,7 @@ class Notes(cog_extension):
         else:
             ctx.send('Wait for the last query finish!')
 
-    @commands.command()
+    @note.command()
     async def clear(self, ctx):
         author = int(ctx.author.id)
         if not self.clear_list:
@@ -99,7 +104,7 @@ class Notes(cog_extension):
                     ll.append((a[1], a[0]))
                     self.note_list.remove(a)
                 self.cur.executemany(
-                    "DELETE FROM NOTE WHERE MESSAGE=(?) AND USER=(?)", (ll))
+                    "DELETE FROM NOTE WHERE MESSAGE=(?) AND USER=(?)", (ll, author))
                 self.con.commit()
                 self.sql = False
                 await ctx.send('Remove all expired message!')
