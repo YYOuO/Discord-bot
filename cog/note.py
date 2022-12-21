@@ -46,14 +46,12 @@ class Notes(cog_extension):
 
     @commands.command()
     async def list(self, ctx):
-        await ctx.send('Message       Time')
-        await ctx.send('------------------')
         for a in self.note_list:
-            await ctx.send(f'{a[1]}    {a[2]}')
-        await ctx.send('------------------')
+            await ctx.send('|{:^35}|{:^16}|'.format(a[1], a[2]))
+        print(self.note_list)
 
     @commands.command()
-    async def create(self, ctx, name, time):
+    async def add(self, ctx, name, time):
         author = int(ctx.author.id)
         if len(time) != 12:
             await ctx.send('Please follow the style yyyymmddhhmm ex. 202201190857')
@@ -67,14 +65,13 @@ class Notes(cog_extension):
             await ctx.send(f'**{name.upper()}** create success!', delete_after=5.0)
             notes = self.cur.execute(
                 "SELECT * FROM `NOTE` ORDER BY `TIMEE` DESC")
-            for a in notes.fetchall():
-                self.note_list.append(a)
+            self.note_list = notes.fetchall()
             self.sql = False
         else:
             ctx.send('Wait for the last query finish!')
 
     @commands.command()
-    async def delete(self, ctx, name):
+    async def remove(self, ctx, name):
         if self.sql == False:
             self.sql = True
             self.cur.execute("DELETE FROM NOTE WHERE MESSAGE=(?)", (name,))
