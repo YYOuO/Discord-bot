@@ -17,24 +17,21 @@ class dcBot(commands.Bot):
                 self.extension.append(f'cog.{file[:-3]}')
 
     async def setup_hook(self):
+        # load command tree to specify guild and sync
+        bot.tree.copy_global_to(guild=discord.Object(id=866673958005506059))
+        await bot.tree.sync(guild=discord.Object(id=866673958005506059))
         for ext in self.extension:
             print(ext)
             await self.load_extension(ext)
 
 
 # intents
-intent = discord.Intents.default()
-intent.members = True
-intent.message_content = True
-
+intent = discord.Intents.all()
 bot = dcBot(intent)
 
 
 @bot.event  # event
 async def on_ready():
-    # load command tree to specify guild and sync
-    bot.tree.copy_global_to(guild=discord.Object(id=866673958005506059))
-    await bot.tree.sync(guild=discord.Object(id=866673958005506059))
     # online message
     print('BOT is online!!')
     channel = bot.get_channel(992786432030679070)
