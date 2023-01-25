@@ -14,15 +14,16 @@ class dcBot(commands.Bot):
         self.extension = []
         for file in os.listdir('./cog'):
             if file.endswith('.py'):
-                self.extension.append(f'cog.{file[:-3]}')
+                self.extension.append(file[:-3])
 
     async def setup_hook(self):
-        # load command tree to specify guild and sync
-        bot.tree.copy_global_to(guild=discord.Object(id=866673958005506059))
-        await bot.tree.sync(guild=discord.Object(id=866673958005506059))
         for ext in self.extension:
             print(ext)
-            await self.load_extension(ext)
+            await self.load_extension('cog.'+ext)
+        # load command tree to specify guild and sync
+        self.tree.copy_global_to(guild=discord.Object(id=866673958005506059))
+        await self.tree.sync(guild=discord.Object(id=866673958005506059))
+        print('tree sync')
 
 
 # intents
@@ -43,30 +44,33 @@ channel = bot.get_channel(jdata['channel'])
 # ----------------------------------------------------------------------------------------------
 
 @ bot.tree.command(name='load', description='Load extension')
-async def load(interaction: discord.Interaction, extension: str):
+@app_commands.choices(extension=[app_commands.Choice(name=a, value=a) for a in bot.extension])
+async def load(interaction: discord.Interaction, extension: app_commands.Choice[str]):
     if str(interaction.user.id) != jdata['developer']:
         await interaction.response.send_message('You do not have the permission!')
         return
-    await bot.load_extension(f'cog.{extension}')
-    await interaction.response.send_message(f'load {extension} !')
+    await bot.load_extension(f'cog.{extension.name}')
+    await interaction.response.send_message(f'Load {extension.name} !')
 
 
 @ bot.tree.command(name='unload', description='Unload extension')
-async def unload(interaction: discord.Interaction, extension: str):
+@app_commands.choices(extension=[discord.app_commands.Choice(name=a, value=a) for a in bot.extension])
+async def unload(interaction: discord.Interaction, extension: app_commands.Choice[str]):
     if str(interaction.user.id) != jdata['developer']:
         await interaction.response.send_message('You do not have the permission!')
         return
-    await bot.unload_extension(f'cog.{extension}')
-    await interaction.response.send_message(f'Unload {extension} !')
+    await bot.unload_extension(f'cog.{extension.name}')
+    await interaction.response.send_message(f'Unload {extension.name} !')
 
 
 @ bot.tree.command(name='reload', description='Reload extension')
-async def reload(interaction: discord.Interaction, extension: str):
+@app_commands.choices(extension=[discord.app_commands.Choice(name=a, value=a) for a in bot.extension])
+async def reload(interaction: discord.Interaction, extension: app_commands.Choice[str]):
     if str(interaction.user.id) != jdata['developer']:
         await interaction.response.send_message('You do not have the permission!')
         return
-    await bot.reload_extension(f'cog.{extension}')
-    await interaction.response.send_message(f'Reload {extension} !')
+    await bot.reload_extension(f'cog.{extension.name}')
+    await interaction.response.send_message(f'Reload {extension.name} !')
 
 
 if __name__ == "__main__":
