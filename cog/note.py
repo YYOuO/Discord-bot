@@ -5,6 +5,7 @@ from set import cog_extension
 import discord.utils
 import datetime
 import asyncio
+from discord import app_commands
 
 
 class Notes(cog_extension):
@@ -15,9 +16,9 @@ class Notes(cog_extension):
         self.cur = self.con.cursor()
         # create table note
         self.cur.execute('''
-            CREATE TABLE IF NOT EXISTS `NOTE` 
-            ( USER INT , 
-            MESSAGE TEXT , 
+            CREATE TABLE IF NOT EXISTS `NOTE`
+            ( USER INT ,
+            MESSAGE TEXT ,
             TIMEE TIMESTAMP);
             ''')
         self.sql = False
@@ -44,22 +45,20 @@ class Notes(cog_extension):
 
         self.timesssss = self.bot.loop.create_task(nowtime())
 
-    @commands.group()
-    async def note(self, ctx):
-        pass
+    note = app_commands.Group(name="note", description="Notes commands")
 
-    @note.command()
-    async def list(self, ctx):
+    @note.command(name='list', description='List the notes')
+    async def list(self, interaction: discord.Interaction):
         for a in self.note_list:
-            await ctx.send('|{:^35}|{:^16}|'.format('Message', 'Time'))
-            await ctx.send('|{:^35}|{:^16}|'.format(a[1], a[2]))
+            await interaction.response.send_message('|{:^35}|{:^16}|'.format('Message', 'Time'))
+            await interaction.response.send_message('|{:^35}|{:^16}|'.format(a[1], a[2]))
         print(self.note_list)
 
-    @note.command()
-    async def create(self, ctx, name, time):
-        author = int(ctx.author.id)
+    @note.command(name='create', description='Create a new note')
+    async def create(self, interaction: discord.Interaction, name: str, time: str):
+        author = interaction.user.id
         if len(time) != 12:
-            await ctx.send('Please follow the style yyyymmddhhmm ex. 202201190857')
+            await interaction.response.send_message('Please follow the style yyyymmddhhmm ex. 202201190857')
             return 'Error!'
         if self.sql == False:
             if int(time):
@@ -67,16 +66,16 @@ class Notes(cog_extension):
                 self.cur.execute(
                     "INSERT INTO `NOTE` (`USER`,`MESSAGE`,`TIMEE`) VALUES(?,?,?)", (author, name, time))
                 self.con.commit()
-            await ctx.send(f'**{name.upper()}** create success!', delete_after=5.0)
+            await interaction.response.send_message(f'**{name.upper()}** create success!', ephemeral=True)
             notes = self.cur.execute(
                 "SELECT * FROM `NOTE` ORDER BY `TIMEE` DESC")
             self.note_list = notes.fetchall()
             self.sql = False
         else:
-            ctx.send('Wait for the last query finish!')
+            await interaction.response.send_message('Wait for the last query finish!')
 
-    @note.command()
-    async def remove(self, ctx, name):
+    @note.command(name='remove', description='Delete the note')
+    async def remove(self, interaction: discord.Interaction, name: str):
         if self.sql == False:
             self.sql = True
             self.cur.execute("DELETE FROM NOTE WHERE MESSAGE=(?)", (name,))
@@ -87,15 +86,15 @@ class Notes(cog_extension):
                     self.note_list.remove(a)
                     if a in self.clear_list:
                         self.clear_list.remove(a)
-            await ctx.send('Delete success!')
+            await interaction.response.send_message('Delete success!')
         else:
-            ctx.send('Wait for the last query finish!')
+            await interaction.response.send_message('Wait for the last query finish!')
 
-    @note.command()
-    async def clear(self, ctx):
-        author = int(ctx.author.id)
+    @note.command(name='clear', description='Clear all expire notes')
+    async def clear(self, interaction: discord.Interaction):
+        author = interaction.user.id
         if not self.clear_list:
-            await ctx.send('Nothing delete!')
+            await interaction.response.send_message('Nothing delete!')
         else:
             if self.sql == False:
                 self.sql = True
@@ -107,9 +106,9 @@ class Notes(cog_extension):
                     "DELETE FROM NOTE WHERE MESSAGE=(?) AND USER=(?)", (ll, author))
                 self.con.commit()
                 self.sql = False
-                await ctx.send('Remove all expired message!')
+                await interaction.response.send_message('Remove all expired message!')
             else:
-                await ctx.send('Wait for the last query finish!')
+                await interaction.response.send_message('Wait for the last query finish!')
 
 
 async def setup(bot):
