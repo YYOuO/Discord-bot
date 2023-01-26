@@ -50,6 +50,8 @@ async def load(interaction: discord.Interaction, extension: app_commands.Choice[
         await interaction.response.send_message('You do not have the permission!')
         return
     await bot.load_extension(f'cog.{extension.name}')
+    bot.tree.copy_global_to(guild=discord.Object(id=866673958005506059))
+    await bot.tree.sync(guild=discord.Object(id=866673958005506059))
     await interaction.response.send_message(f'Load {extension.name} !')
 
 
@@ -70,6 +72,8 @@ async def reload(interaction: discord.Interaction, extension: app_commands.Choic
         await interaction.response.send_message('You do not have the permission!')
         return
     await bot.reload_extension(f'cog.{extension.name}')
+    bot.tree.copy_global_to(guild=discord.Object(id=866673958005506059))
+    await bot.tree.sync(guild=discord.Object(id=866673958005506059))
     await interaction.response.send_message(f'Reload {extension.name} !')
 
 
