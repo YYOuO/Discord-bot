@@ -16,7 +16,7 @@ class Cmds(cog_extension):
 
     @app_commands.command(name='ping', description='latnecy of bot')
     async def ping(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'Pong! {round(self.bot.latency*1000)}(ms)')
+        await interaction.response.send_message(f'Pong! {round(self.bot.latency*1000)} (ms)')
 
     @app_commands.command(name='add', description='add role')
     async def add(self, interaction: discord.Interaction):
@@ -39,8 +39,9 @@ class Cmds(cog_extension):
 
     @app_commands.command(name='dmme', description='create dm')
     async def dmme(self, interaction: discord.Interaction):
-        dm = interaction.user.create_dm()
-        await dm.send('what')
+        dm = await self.bot.create_dm(user=discord.Object(id=interaction.user.id))
+        await interaction.response.send_message("I've sent you a message !", ephemeral=True)
+        await dm.send(content='what')
 
 
 async def setup(bot):

@@ -110,3 +110,7 @@ class Notes(cog_extension):
 
 async def setup(bot):
     await bot.add_cog(Notes(bot))
+
+    @bot.tree.context_menu(name='Remind me!')
+    async def remind(interaction: discord.Interaction, messsage: discord.Message):
+        await interaction.response.send_message('Got it ! ✅')
