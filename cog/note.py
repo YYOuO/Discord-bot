@@ -1,10 +1,9 @@
 import discord
-from discord.ext import commands
+from discord.ext import tasks
 import sqlite3
 from set import cog_extension
 import discord.utils
 import datetime
-import asyncio
 from discord import app_commands
 
 
@@ -31,27 +30,25 @@ class Notes(cog_extension):
         for a in notes.fetchall():
             self.note_list.append(a)
 
+        @tasks.loop(minutes=5.0)
         async def nowtime():
             await self.bot.wait_until_ready()
             while not self.bot.is_closed():
-                self.time = int(
+                time = int(
                     datetime.datetime.today().strftime('%Y%m%d%H%M'))
-                print(f'Now time: {self.time}')
+                print(f'Now time: {time}')
                 for a in self.note_list:
                     if self.time > a[2]:
                         self.clear_list.append(a)
                         await self.channel.send(f'Hey! {self.bot.get_user(int(self.note_list[a][0])).mention} {a[1]}')
-                await asyncio.sleep(300)
-
-        self.timesssss = self.bot.loop.create_task(nowtime())
 
     note = app_commands.Group(name="note", description="Notes commands")
 
     @note.command(name='list', description='List the notes')
     async def list(self, interaction: discord.Interaction):
         for a in self.note_list:
-            await interaction.response.send_message('|{:^35}|{:^16}|'.format('Message', 'Time'))
-            await interaction.response.send_message('|{:^35}|{:^16}|'.format(a[1], a[2]))
+            await interaction.followup.send('|{:^35}|{:^16}|'.format('Message', 'Time'))
+            await interaction.followup.send('|{:^35}|{:^16}|'.format(a[1], a[2]))
         print(self.note_list)
 
     @note.command(name='create', description='Create a new note')
