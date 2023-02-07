@@ -3,6 +3,8 @@ import json
 import discord
 from discord.ext import commands
 from discord import app_commands
+import datetime
+from base64 import b64decode
 # 導入json檔
 with open('setting.json', "r", encoding="utf8") as jfile:
     jdata = json.load(jfile)
@@ -37,6 +39,7 @@ async def on_ready():
     print('BOT is online!!')
     channel = bot.get_channel(992786432030679070)
     await channel.send('Your bot is online!')
+    await channel.send(f'學測剩下 **{(datetime.date(2024, 1, 19)-datetime.date.today()).days}** 天 !')
 
 channel = bot.get_channel(jdata['channel'])
 
@@ -78,4 +81,4 @@ async def reload(interaction: discord.Interaction, extension: app_commands.Choic
 
 
 if __name__ == "__main__":
-    bot.run(jdata['TOKEN'])
+    bot.run(b64decode(jdata['TOKEN']).decode())
