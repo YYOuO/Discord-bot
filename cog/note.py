@@ -5,6 +5,7 @@ from set import cog_extension
 import discord.utils
 import datetime
 from discord import app_commands
+from discord.ui import Select, View
 
 
 class Notes(cog_extension):
@@ -18,38 +19,40 @@ class Notes(cog_extension):
             CREATE TABLE IF NOT EXISTS `NOTE`
             ( USER INT ,
             MESSAGE TEXT ,
-            TIMEE TIMESTAMP);
+            TIMEE TIMESTAMP,
+            ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT
+            );
             ''')
         self.sql = False
         self.con.commit()
-        self.note_list = []
         self.clear_list = []
         self.time = 0
-        notes = self.cur.execute(
-            "SELECT * FROM `NOTE`  ORDER BY `TIMEE` DESC")
-        for a in notes.fetchall():
-            self.note_list.append(a)
+        self.nowtime.start()
 
-        @tasks.loop(minutes=5.0)
-        async def nowtime():
-            await self.bot.wait_until_ready()
-            while not self.bot.is_closed():
-                time = int(
-                    datetime.datetime.today().strftime('%Y%m%d%H%M'))
-                print(f'Now time: {time}')
-                for a in self.note_list:
-                    if self.time > a[2]:
-                        self.clear_list.append(a)
-                        await self.channel.send(f'Hey! {self.bot.get_user(int(self.note_list[a][0])).mention} {a[1]}')
+    @tasks.loop(minutes=5.0)
+    async def nowtime(self):
+        await self.bot.wait_until_ready()
+        channel = self.bot.get_channel(992786432030679070)
+        time = int(datetime.datetime.today().strftime('%Y%m%d%H%M'))
+        print(f'Now time: {time}')
+        notes = self.cur.execute("SELECT * FROM `NOTE`  ORDER BY `TIMEE` DESC")
+        for a in notes.fetchall():
+            if time > int(a[2]):
+                self.clear_list.append(a)
+                await channel.send(f"Hey! {self.bot.get_user(int(a[0])).mention} Did you forget this -> **{a[1]}** ?")
+        print('Time check End!')
 
     note = app_commands.Group(name="note", description="Notes commands")
 
     @note.command(name='list', description='List the notes')
     async def list(self, interaction: discord.Interaction):
-        for a in self.note_list:
-            await interaction.followup.send('|{:^35}|{:^16}|'.format('Message', 'Time'))
-            await interaction.followup.send('|{:^35}|{:^16}|'.format(a[1], a[2]))
-        print(self.note_list)
+        notes = self.cur.execute("SELECT * FROM `NOTE`  ORDER BY `TIMEE` DESC")
+        text = '|{:^40}|{:^20}|'.format('Message', 'Time')+'\n'
+        for a in notes.fetchall():
+            test = str(a[2])[:4]+'-'+str(a[2])[4:6]+'-'+str(a[2])[6:8] + \
+                ' '+str(a[2])[8:10]+':'+str(a[2])[10:12]
+            text += '|{:^40}|{:^20}|'.format(a[1], test)+'\n'
+        await interaction.response.send_message(text)
 
     @note.command(name='create', description='Create a new note')
     async def create(self, interaction: discord.Interaction, name: str, time: str):
@@ -64,9 +67,6 @@ class Notes(cog_extension):
                     "INSERT INTO `NOTE` (`USER`,`MESSAGE`,`TIMEE`) VALUES(?,?,?)", (author, name, time))
                 self.con.commit()
             await interaction.response.send_message(f'**{name.upper()}** create success!', ephemeral=True)
-            notes = self.cur.execute(
-                "SELECT * FROM `NOTE` ORDER BY `TIMEE` DESC")
-            self.note_list = notes.fetchall()
             self.sql = False
         else:
             await interaction.response.send_message('Wait for the last query finish!')
@@ -78,18 +78,15 @@ class Notes(cog_extension):
             self.cur.execute("DELETE FROM NOTE WHERE MESSAGE=(?)", (name,))
             self.con.commit()
             self.sql = False
-            for a in self.note_list:
-                if name in a:
-                    self.note_list.remove(a)
-                    if a in self.clear_list:
-                        self.clear_list.remove(a)
+            for a in self.clear_list:
+                if a[1] == name and a[0] == interaction.user.id:
+                    self.clear_list.remove(a)
             await interaction.response.send_message('Delete success!')
         else:
             await interaction.response.send_message('Wait for the last query finish!')
 
     @note.command(name='clear', description='Clear all expire notes')
     async def clear(self, interaction: discord.Interaction):
-        author = interaction.user.id
         if not self.clear_list:
             await interaction.response.send_message('Nothing delete!')
         else:
@@ -98,9 +95,9 @@ class Notes(cog_extension):
                 ll = []
                 for a in self.clear_list:
                     ll.append((a[1], a[0]))
-                    self.note_list.remove(a)
+                    self.clear_list.remove(a)
                 self.cur.executemany(
-                    "DELETE FROM NOTE WHERE MESSAGE=(?) AND USER=(?)", (ll, author))
+                    "DELETE FROM NOTE WHERE MESSAGE=(?) AND USER=(?)", ll)
                 self.con.commit()
                 self.sql = False
                 await interaction.response.send_message('Remove all expired message!')
@@ -109,8 +106,33 @@ class Notes(cog_extension):
 
 
 async def setup(bot):
-    await bot.add_cog(Notes(bot))
+    nn = Notes(bot=bot)
+    await bot.add_cog(nn)
+
+    class timeselect(Select):
+        def __init__(self, message: discord.Message) -> None:
+            options = [discord.SelectOption(label=_)
+                       for _ in range(10, 120, 10)]
+            self.message = message
+            super().__init__(placeholder="Remind me _ minutes later", options=options)
+
+        async def callback(self, interaction: discord.Interaction):
+            if nn.sql == False:
+                nn.sql = True
+                time = str((datetime.datetime.today(
+                )+datetime.timedelta(minutes=float(self.values[0]))).strftime('%Y%m%d%H%M'))
+                print(datetime.datetime.now())
+                print(time)
+                nn.cur.execute(
+                    "INSERT INTO `NOTE` (`USER`,`MESSAGE`,`TIMEE`) VALUES(?,?,?)", (interaction.user.id, self.message.content, time))
+                nn.con.commit()
+                nn.sql = False
+            else:
+                await interaction.response.send_message('Wait for the last query finish!')
+            await interaction.response.edit_message(content=f"**{self.message.content}** set! \n You've selete **{self.values[0]}** \n I'll remind you **{self.values[0]}** minutes later !", view=None)
 
     @bot.tree.context_menu(name='Remind me!')
     async def remind(interaction: discord.Interaction, messsage: discord.Message):
-        await interaction.response.send_message('Got it ! ✅')
+        view = View()
+        view.add_item(timeselect(messsage))
+        await interaction.response.send_message('Got it ! ✅', view=view)
