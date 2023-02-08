@@ -33,7 +33,7 @@ class Cmds(cog_extension):
         for a in range(quantity):
             tmp = random.choice(choices)
             answer += tmp
-            if a != range(quantity)-1:
+            if a != quantity-1:
                 answer += ' , '
         await interaction.response.send_message(f'就決定是你了！出來吧 {answer}！')
 
