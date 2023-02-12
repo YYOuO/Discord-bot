@@ -27,6 +27,7 @@ class Notes(cog_extension):
         self.con.commit()
         self.clear_list = []
         self.time = 0
+        self.nowtime.cancel()
         self.nowtime.start()
 
     @tasks.loop(minutes=5.0)
@@ -47,11 +48,11 @@ class Notes(cog_extension):
     @note.command(name='list', description='List the notes')
     async def list(self, interaction: discord.Interaction):
         notes = self.cur.execute("SELECT * FROM `NOTE`  ORDER BY `TIMEE` DESC")
-        text = '|{:^40}|{:^20}|'.format('Message', 'Time')+'\n'
+        text = '|{:^10}|{:^40}|{:^20}|'.format('ID', 'Message', 'Time')+'\n'
         for a in notes.fetchall():
             test = str(a[2])[:4]+'-'+str(a[2])[4:6]+'-'+str(a[2])[6:8] + \
                 ' '+str(a[2])[8:10]+':'+str(a[2])[10:12]
-            text += '|{:^40}|{:^20}|'.format(a[1], test)+'\n'
+            text += '|{:^10}|{:^40}|{:^20}|'.format(a[3], a[1], test)+'\n'
         await interaction.response.send_message(text)
 
     @note.command(name='create', description='Create a new note')
@@ -72,10 +73,15 @@ class Notes(cog_extension):
             await interaction.response.send_message('Wait for the last query finish!')
 
     @note.command(name='remove', description='Delete the note')
-    async def remove(self, interaction: discord.Interaction, name: str):
+    async def remove(self, interaction: discord.Interaction, nameorid: str):
         if self.sql == False:
             self.sql = True
-            self.cur.execute("DELETE FROM NOTE WHERE MESSAGE=(?)", (name,))
+            try:
+                name = int(nameorid)
+                self.cur.execute("DELETE FROM NOTE WHERE ID=(?)", (name,))
+            except:
+                self.cur.execute(
+                    "DELETE FROM NOTE WHERE MESSAGE=(?)", (nameorid,))
             self.con.commit()
             self.sql = False
             for a in self.clear_list:
@@ -127,9 +133,9 @@ async def setup(bot):
                     "INSERT INTO `NOTE` (`USER`,`MESSAGE`,`TIMEE`) VALUES(?,?,?)", (interaction.user.id, self.message.content, time))
                 nn.con.commit()
                 nn.sql = False
+                await interaction.response.edit_message(content=f"**{self.message.content}** set! \n You've selete **{self.values[0]}** \n I'll remind you **{self.values[0]}** minutes later !", view=None)
             else:
                 await interaction.response.send_message('Wait for the last query finish!')
-            await interaction.response.edit_message(content=f"**{self.message.content}** set! \n You've selete **{self.values[0]}** \n I'll remind you **{self.values[0]}** minutes later !", view=None)
 
     @bot.tree.context_menu(name='Remind me!')
     async def remind(interaction: discord.Interaction, messsage: discord.Message):
