@@ -53,11 +53,11 @@ class Task(cog_extension):
 
     # chceknews
     tnfsh = "https://www.tnfsh.tn.edu.tw/latestevent/Index.aspx?Parser=9,3,19"
-    tnfsh_notify = TnfshNotify(tnfsh)
 
     @tasks.loop(minutes=30.0)
-    async def checknews(self, tnfsh_notify=tnfsh_notify):
+    async def checknews(self, tnfsh=tnfsh):
         await self.bot.wait_until_ready()
+        tnfsh_notify = TnfshNotify(tnfsh)
         print('checknews start')
         normal_list = set(tnfsh_notify.getNormalList())
         top_list = set(tnfsh_notify.getPuttopList())
