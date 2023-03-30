@@ -1,3 +1,4 @@
+from todoist_api_python.api_async import TodoistAPIAsync
 import discord
 import json
 with open('./setting.json', 'r', encoding='UTF-8') as jfile:
@@ -15,8 +16,8 @@ class Task(cog_extension):
         # 父類別初始化屬性(就是搬過來用)
         super().__init__(bot)
         self.channel = self.bot.get_channel(992786432030679070)
-        self.old_normal = set()
-        self.old_top = set()
+        self.old_normal = []
+        self.old_top = []
         self.checkrole.start()
         self.checknews.start()
         self.TOJcheck.start()
@@ -54,20 +55,32 @@ class Task(cog_extension):
     # chceknews
     tnfsh = "https://www.tnfsh.tn.edu.tw/latestevent/Index.aspx?Parser=9,3,19"
 
-    @tasks.loop(minutes=30.0)
+    @tasks.loop(hours=1.0)
     async def checknews(self, tnfsh=tnfsh):
         await self.bot.wait_until_ready()
         tnfsh_notify = TnfshNotify(tnfsh)
         print('checknews start')
-        normal_list = set(tnfsh_notify.getNormalList())
-        top_list = set(tnfsh_notify.getPuttopList())
-        nl = normal_list-self.old_normal
-        tl = top_list-self.old_top
+        normal_list = tnfsh_notify.getNormalList()
+        top_list = tnfsh_notify.getPuttopList()
+        kk, kk1, newtop, newnormal = False, False, 0, 0
+        for a in range(10):
+            try:
+                if normal_list[a].getUrl() != self.old_normal[a].getUrl() and kk == False:
+                    newnormal = a
+                    kk = True
+            except IndexError:
+                pass
+            try:
+                if top_list[a].getUrl() != self.old_top[a].getUrl() and kk1 == False:
+                    newtop = a
+                    kk1 = True
+            except IndexError:
+                pass
         await asyncio.sleep(30)
-        for a in tl:
+        for a in top_list[newtop:]:
             await self.embedit(a.getUrl(), a.getText(), a.getClaimDate(), a.getClaimGroup(), "置頂！", self.channel)
         await asyncio.sleep(10)
-        for a in nl:
+        for a in normal_list[newnormal:]:
             await self.embedit(a.getUrl(), a.getText(), a.getClaimDate(), a.getClaimGroup(), "一般！", self.channel)
         self.old_normal = normal_list
         self.old_top = top_list
