@@ -27,8 +27,10 @@ class Notes(cog_extension):
         self.con.commit()
         self.clear_list = []
         self.time = 0
-        self.nowtime.cancel()
         self.nowtime.start()
+
+    def cog_unload(self):
+        return self.nowtime.cancel()
 
     @tasks.loop(minutes=5.0)
     async def nowtime(self):
