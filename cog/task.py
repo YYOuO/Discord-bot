@@ -22,6 +22,11 @@ class Task(cog_extension):
         self.checknews.start()
         self.TOJcheck.start()
 
+    def cog_unload(self):
+        self.checkrole.cancel()
+        self.checknews.cancel()
+        self.TOJcheck.cancel()
+
     async def embedit(self, URL: str, TITLE: str, DESCRIPTION: str, GROUP: str, TOP: str, CHANNEL: str) -> None:
         url = 'https://www.tnfsh.tn.edu.tw/latestevent/'+URL
         embed = discord.Embed(
