@@ -7,13 +7,8 @@ import discord.utils
 class Event(cog_extension):
     @commands.Cog.listener()
     async def on_message(self, ctx):
-        if ctx.content == 'hi':
-            await ctx.channel.send('幹嘛')
-        if ctx.content.lower() == "<:pepesad:873572961272090654>":
-            await ctx.channel.send('衝三小')
-            await ctx.channel.send('<:eatgold:987356435610476635>')
-        if ctx.content.lower() == "<:pepehappy:868860098708119593>":
-            await ctx.channel.send('笑死幹')
+        if ctx.content == "hi":
+            await ctx.channel.send("hello")
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):

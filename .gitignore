@@ -6,3 +6,4 @@
 #忽略此檔案
 test.py
 *.db
+*.json
